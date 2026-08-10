@@ -1,0 +1,13 @@
+{
+  "name": "shaderscript",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "checks": "bun run --cwd packages/checks check",
+    "checks:structure": "bun run --cwd packages/checks check:structure"
+  }
+}
