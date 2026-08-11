@@ -53,8 +53,9 @@ Walk groups in order (A, then B, then …). For each group:
 2. **If the group has 2+ ready tasks** with unmet deps cleared and disjoint
    files → **fan out one implementer subagent per task in the same turn** (or
    Multitask when the user is in that mode).
-3. **Worker brief (required):** give **only** the Task N block (or path to a
-   `task-N.md` card ≤80 lines). Include the branch name and these hard limits:
+3. **Worker brief (required):** give **only** the path to the task’s
+   `task-N.md` card (≤80 lines — task text lives in the card, not in the main
+   plan). Include the branch name and these hard limits:
    - Implement the task steps only.
    - Do **not** run `/check-and-commit`.
    - Do **not** edit `.ai/plans/` (including Progress checkboxes). Hard fail if

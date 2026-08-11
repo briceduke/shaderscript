@@ -1,6 +1,6 @@
 ﻿---
 name: plan
-description: Turn a finalized spec into a slice-first implementation plan at .ai/plans/{YYYY-MM-DD}-{slug}.md with explicit Parallel groups. Every task must include exact paths, exact commands, expected output, a first example path for UI, an out-of-scope list, and escape hatches. Use after open questions are resolved. Do not use while the spec still has open questions, and do not use it to design — design happens in /spec-writing.
+description: Turn a finalized spec into a slice-first implementation plan at .ai/plans/{YYYY-MM-DD}-{slug}.md plus one task-{N}.md card per task, with explicit Parallel groups. Every task card must include exact paths, exact commands, expected output, a first example path for UI, an out-of-scope list, and escape hatches. Use after open questions are resolved. Do not use while the spec still has open questions, and do not use it to design — design happens in /spec-writing.
 disable-model-invocation: true
 ---
 
@@ -59,13 +59,16 @@ of a multi-task layer cake.
 
 ## Step 3: Write each task
 
-Every task uses exactly this shape:
+Write every task to its own card: `.ai/plans/{YYYY-MM-DD}-{slug}/task-{N}.md`,
+≤80 lines. The main plan file never repeats task text. Every card uses exactly
+this shape:
 
 ````markdown
-## Task N: {imperative title}
+# Task N: {imperative title}
 
 **Depends on:** {task numbers, or "none"}
 **Spec:** {path} § {section anchor}   <!-- cite; do not restate design -->
+**Plan:** {plan path} ({shared contract section, if the card cites one})
 **Files:**
 - Create: `{exact path}`
 - Modify: `{exact path}` — {what changes}
@@ -169,14 +172,16 @@ Rules for this section:
   rewrite** before presenting the plan.
 - Note when Multitask / subagents should be used for a group (default for any
   group with 2+ ready tasks).
-- Group files are optional. If you split context into group files, each worker
-  still gets **only Task N** (or a `task-N.md` ≤80 lines). Do not make eight
-  agents re-read a 400-line group preamble. Do not point workers at the main
-  plan for task text — parent alone uses the main plan for Progress.
+- Each worker gets **only its `task-N.md` card**. Do not write group preamble
+  files. Do not point workers at the main plan for task text — the parent
+  alone uses the main plan for Progress. A card may cite one shared contract
+  section (e.g. a locked module API) by name when the task needs it.
 
 ## Step 5: Write the plan file
 
-Save to `.ai/plans/{YYYY-MM-DD}-{slug}.md` (today's date, same slug as the spec):
+Save the plan to `.ai/plans/{YYYY-MM-DD}-{slug}.md` and each task card to
+`.ai/plans/{YYYY-MM-DD}-{slug}/task-{N}.md` (today's date, same slug as the
+spec):
 
 ```markdown
 # {Feature} — implementation plan
@@ -190,8 +195,10 @@ Save to `.ai/plans/{YYYY-MM-DD}-{slug}.md` (today's date, same slug as the spec)
   <!-- workers read only this; plan author already read the full lessons file -->
 
 ## Progress
-- [ ] Task 1: {title}
-- [ ] Task 2: {title}
+Task text lives only in the linked cards; workers read their card, never this
+file. The parent alone edits Progress.
+- [ ] Task 1: {title} — [task-1.md]({date}-{slug}/task-1.md)
+- [ ] Task 2: {title} — [task-2.md]({date}-{slug}/task-2.md)
 
 ## Parallel groups
 {Group A / B / … as above}
@@ -199,19 +206,20 @@ Save to `.ai/plans/{YYYY-MM-DD}-{slug}.md` (today's date, same slug as the spec)
 ## Dependencies
 {short summary that matches Parallel groups — no fake chains}
 
+## {Shared contract — optional, e.g. Locked module API}
+{interfaces or signatures several tasks must implement exactly; cards cite
+this section by name}
+
 ## Global out of scope
 - {items that apply to the whole plan}
 
 ## Global escape hatches
 - If {assumption} is false, STOP and report — do not improvise.
-
----
-{tasks}
 ```
 
-For large groups (4+ tasks, or any task block that would force workers to load
-shared fluff), also write `.ai/plans/{YYYY-MM-DD}-{slug}/task-{N}.md` with that
-task’s full card only. The main plan Progress list still lists every task title.
+The main plan carries tracker + contract only. Keep each fact in one file:
+task text in its card, shared contracts in the plan. Fix a task in its card;
+fix a contract in the plan.
 
 The Progress checklist is the live tracker — the `/execute` **parent** checks
 items off in this file, one task at a time after each serial commit. Implementers
@@ -223,6 +231,7 @@ create a separate todo file.
 - [ ] Slice-first unless a shared foundation truly blocks every slice
 - [ ] `## Parallel groups` present, honest, and maximized
 - [ ] No long fake chain when 2+ tasks could run together
+- [ ] Task text lives only in cards; the main plan has no `## Task N` sections
 - [ ] Every task has exact paths, exact commands, and expected output
 - [ ] Every UI task names its first example file
 - [ ] Every task has an out-of-scope list and escape hatches

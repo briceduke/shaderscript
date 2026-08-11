@@ -1,0 +1,21 @@
+{
+  "name": "@shaderscript/shaderscript",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:compile": "bun test ./test/compile",
+    "test:harness": "bun test ./test/harness",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "typescript": "^5.8.2"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@webgpu/types": "^0.1.60"
+  },
+  "engines": {
+    "bun": ">=1.1.0"
+  }
+}

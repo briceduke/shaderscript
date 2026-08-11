@@ -8,6 +8,8 @@
   ],
   "scripts": {
     "checks": "bun run --cwd packages/checks check",
-    "checks:structure": "bun run --cwd packages/checks check:structure"
+    "checks:structure": "bun run --cwd packages/checks check:structure",
+    "test:compile": "bun run --cwd packages/shaderscript test:compile",
+    "test:harness": "bun run --cwd packages/shaderscript test:harness"
   }
 }

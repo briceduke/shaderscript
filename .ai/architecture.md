@@ -8,7 +8,7 @@ Four parts. Each earns its keep for the MVP path.
 
 | Piece | Job |
 |-------|-----|
-| **Subset checker** | Given TypeScript under `use gpu` (or the MVP entry convention), accept only the allowed subset. Reject the rest with clear errors. Same rules the compiler trusts. |
+| **Subset checker** | Given TypeScript under `'use gpu'` (directive string in the kernel function body), accept only the allowed subset. Reject the rest with clear errors. Same rules the compiler trusts. |
 | **Compiler** | Parse real TypeScript (TypeScript compiler API), check the subset, emit WGSL. No custom dialect. GPU-only ideas use ordinary TypeScript (library functions, types, annotations). |
 | **Runner** | Thin WebGPU path: load WGSL, create buffers, bind, dispatch, read results. Enough to prove one kernel. Not a full host/product API yet. |
 | **Harness** | Fixed WGSL feature checklist mapped 1:1 to tests; correctness vs CPU reference and/or hand WGSL; timing vs hand-WGSL twin. Reports coverage percent and the performance gap. |
@@ -52,9 +52,9 @@ App-integration flow (later, not MVP): normal app file with `use gpu` → Vite/N
 
 **Name:** Hello compute (element-wise float add)
 
-**Cut:** One kernel written in the TypeScript subset (`out[i] = a[i] + b[i]` or equivalent) → subset check → WGSL emit → WebGPU run → results match a CPU reference → timing recorded against a hand-WGSL twin where practical → harness checklist has at least that feature row and reports a real coverage percent (even if low).
+**Cut:** One kernel written in the TypeScript subset with `'use gpu'` (`out[i] = a[i] + b[i]` or equivalent) → subset check → WGSL emit → WebGPU run → results match a CPU reference (exact f32) → timing recorded against a required hand-WGSL twin on local GPU prove → harness checklist has at least that feature row and reports a real coverage percent (even if low).
 
-**Why this slice:** It proves the product claim end to end (real TS → WGSL → GPU → trusted result) without plugins, LSP, or a model. Everything else hangs off this spine.
+**Why this slice:** It proves the product claim end to end (real TS with `'use gpu'` marker → WGSL → GPU → trusted result) without Vite/Next plugins, LSP, or a model. Everything else hangs off this spine.
 
 **Smallest proof:** Harness test that fails if compile, run, or reference compare fails. Coverage and timing are part of that same spine, not a second project.
 
@@ -62,7 +62,7 @@ App-integration flow (later, not MVP): normal app file with `use gpu` → Vite/N
 
 ## Deliberately not building yet
 
-- Vite plugin, Next.js plugin, and `use gpu` directive plumbing in app builds
+- Vite plugin, Next.js plugin, and other `'use gpu'` plumbing in app builds (the **marker** itself is in slice 1: checker/compiler find `'use gpu'` in the function body)
 - LSP / editor intelligence and Biome/ESLint subset lint productization
 - Full host/runtime API and typed bindings product surface (runner stays thin)
 - WGSL escape hatch as a shipped feature (hand WGSL in harness baselines only)
@@ -84,7 +84,7 @@ App-integration flow (later, not MVP): normal app file with `use gpu` → Vite/N
 | **Harness** | Coverage checklist + correctness refs + performance timing. Guesswork does not count. |
 | **Coverage percent** | Share of the fixed WGSL feature checklist with a mapped passing test. Progress marker. |
 | **Escape-hatch idiom** | Ordinary TypeScript (function/type/annotation) for a GPU-only idea — not new syntax. |
-| **`use gpu`** | Later directive (or equivalent) marking GPU entrypoints in a normal TS codebase. |
+| **`use gpu`** | Directive string in a kernel function body marking a GPU entrypoint. Slice 1: AST marker for checker/compiler only. Vite/Next plugin wiring comes later. |
 
 ## Need check
 
@@ -112,5 +112,12 @@ Do not invent `packages/lsp`, `packages/vite-plugin`, or `packages/host` until t
 | Topic | Decision |
 |-------|----------|
 | First kernel | Element-wise float add (`out[i] = a[i] + b[i]`) |
+| Entry marker | `'use gpu'` in the kernel function body (AST marker only; no app-build plugins in slice 1) |
+| Parse / check | TypeScript compiler API only (no SWC) |
+| Kernel buffers (slice 1) | Params in order → bind group 0 bindings; `StorageF32` + `globalId` library idioms (no schema DSL) |
+| No WebGPU | Runner throws; CI GPU bars unverifiable/skip; local expected-GPU run fails if missing |
+| Workgroup (slice 1) | Fixed `@workgroup_size(64)` for hello-add; author-controlled later for full WGSL |
+| Emit proof | Normalized golden WGSL snapshot for hello-add |
+| Hand-WGSL twin | Required for hello-add timing bar (local GPU); not a correctness substitute for CPU ref |
 | CI prove | Compile + subset always in CI; GPU correctness/timing local (or unverifiable in CI) until headless WebGPU exists |
 | Package split | One package for checker + compiler + runner until a second consumer forces a seam |

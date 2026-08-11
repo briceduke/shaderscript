@@ -312,3 +312,43 @@ CI always runs subset + compile. GPU correctness and timing are local prove or f
 Proof ladder, CI config, harness tests, and draft PRs with unverifiable GPU bars.
 
 **Tags:** platform, process
+
+---
+
+## Context
+
+Plan audit before execute found: a tsconfig copied from a neighbor package would have excluded the fixture it was meant to typecheck (vacuous green), a locked "do not redesign" API that could not typecheck its own fixture, and a parallel group whose verify bar secretly depended on a sibling task's behavior.
+
+## Problem
+
+A verify command that never sees the target file passes without proving anything. A locked contract that contradicts its own example forces workers to stall or silently deviate. File-disjoint tasks can still be behavior-dependent (a golden test needs the real checker, not just its stub signature).
+
+## Rule
+
+At plan time: trace each verify command to the files it actually checks; make locked APIs typecheck against the plan's own fixture code before locking them; treat "parallel" as file-disjoint AND behavior-disjoint — a task whose tests exercise another task's real output starts after it.
+
+## Applies to
+
+`/plan`, plan audits, worker briefs, locked module APIs, and any copied tsconfig or config scaffold.
+
+**Tags:** process, plan
+
+---
+
+## Context
+
+Plans carried full task text in the main plan file and again in per-task card files.
+
+## Problem
+
+Two copies of every task drift: each plan fix lands twice or diverges. Workers never read the main plan, so its copy of the task text is dead weight.
+
+## Rule
+
+Task text lives only in `task-N.md` cards. The main plan carries the tracker (Progress with card links), parallel groups, dependencies, shared contracts (locked APIs), and global scope. Fix a task in its card; fix a contract in the plan.
+
+## Applies to
+
+`/plan`, plan audits, `/execute` worker briefs.
+
+**Tags:** process, plan
