@@ -352,3 +352,23 @@ Task text lives only in `task-N.md` cards. The main plan carries the tracker (Pr
 `/plan`, plan audits, `/execute` worker briefs.
 
 **Tags:** process, plan
+
+---
+
+## Context
+
+Slice 2 wired `bun-webgpu` preload. Published npm layout has no `dawn/download_artifacts.ts`; platform optionalDependencies ship the native lib. On Linux without Vulkan, `setupGlobals` still succeeds and Dawn returns a **null-backend** adapter that acquires a device and returns garbage f32.
+
+## Problem
+
+Locked download path and “device present → run GPU asserts” treat null-backend as a real device. Device-free `test:harness` fails in CI/cloud even when EXPECT is unset. README that documents a missing download script misleads humans.
+
+## Rule
+
+After `bun-webgpu` install, inspect the real on-disk layout before locking docs. Treat Dawn `null-backend` (adapter.info.device / backendType Null) as **no usable device** — skip + unverifiable when EXPECT unset; fail loud when EXPECT=1. Do not equate null-backend with a software/fallback adapter.
+
+## Applies to
+
+`/execute` harness preload, local WebGPU prove, README Dawn setup, CI device-free gates.
+
+**Tags:** platform, execute, harness
