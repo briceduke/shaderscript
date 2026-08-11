@@ -1,0 +1,4 @@
+{
+  "name": "shaderscript",
+  "install": "curl -fsSL https://bun.sh/install | bash && sudo ln -sf \"$HOME/.bun/bin/bun\" /usr/local/bin/bun && bun install --frozen-lockfile"
+}
