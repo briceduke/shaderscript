@@ -1,8 +1,5 @@
 import { checklist, coveragePercent } from "./checklist.ts";
-import {
-  requestDeviceOrThrowAsync,
-  runComputeReadbackAsync,
-} from "../src/runner.ts";
+import { runComputeReadbackAsync } from "../src/runner.ts";
 
 /**
  * Asserts two Float32Arrays are exactly equal (bit-identical values).
@@ -57,24 +54,52 @@ export interface DeviceAcquireFail {
 
 export type DeviceAcquireResult = DeviceAcquireOk | DeviceAcquireFail;
 
+interface AdapterInfoLike {
+  readonly device?: string;
+  readonly backendType?: number;
+  readonly isFallbackAdapter?: boolean;
+}
+
+/** Dawn Null backend type enum value (bun-webgpu / Dawn). */
+const DAWN_BACKEND_NULL = 1;
+
 /**
- * Logs adapter class when isFallbackAdapter is available.
- * Does not throw; logging only.
+ * Whether the adapter is Dawn's null backend (API only; compute returns garbage).
+ * @param adapter - Acquired GPU adapter.
+ * @returns True when null-backend; treat as no usable device.
  */
-async function logAdapterClassAsync(): Promise<void> {
+function isNullBackendAdapter(adapter: GPUAdapter): boolean {
+  const info = (adapter as GPUAdapter & { readonly info?: AdapterInfoLike })
+    .info;
+  if (info === undefined) {
+    return false;
+  }
+  if (info.device === "null-backend") {
+    return true;
+  }
+  return info.backendType === DAWN_BACKEND_NULL;
+}
+
+/**
+ * Logs adapter class when fallback flag is available on info or adapter.
+ * Does not throw; logging only.
+ * @param adapter - Acquired GPU adapter.
+ * @returns void
+ */
+function logAdapterClass(adapter: GPUAdapter): void {
   try {
-    const navigatorLike = globalThis.navigator as Navigator | undefined;
-    const gpu = navigatorLike?.gpu;
-    if (gpu === undefined) {
-      return;
-    }
-    const adapter = await gpu.requestAdapter();
-    if (adapter === null) {
-      return;
-    }
-    const fallback = (
+    const info = (adapter as GPUAdapter & { readonly info?: AdapterInfoLike })
+      .info;
+    const fromInfo = info?.isFallbackAdapter;
+    const fromAdapter = (
       adapter as GPUAdapter & { readonly isFallbackAdapter?: boolean }
     ).isFallbackAdapter;
+    const fallback =
+      typeof fromInfo === "boolean"
+        ? fromInfo
+        : typeof fromAdapter === "boolean"
+          ? fromAdapter
+          : undefined;
     if (typeof fallback !== "boolean") {
       return;
     }
@@ -90,12 +115,32 @@ async function logAdapterClassAsync(): Promise<void> {
 
 /**
  * Tries to acquire a device without throwing.
+ * Rejects Dawn null-backend adapters so device-free CI stays green and EXPECT=1 fails loud.
  * @returns Device or failure reason.
  */
 export async function tryAcquireDeviceAsync(): Promise<DeviceAcquireResult> {
   try {
-    const device = await requestDeviceOrThrowAsync();
-    await logAdapterClassAsync();
+    const navigatorLike = globalThis.navigator as Navigator | undefined;
+    const gpu = navigatorLike?.gpu;
+    if (gpu === undefined) {
+      return {
+        ok: false,
+        reason: "WebGPU is not available: navigator.gpu is missing",
+      };
+    }
+    const adapter = await gpu.requestAdapter();
+    if (adapter === null) {
+      return { ok: false, reason: "WebGPU is not available: no adapter" };
+    }
+    if (isNullBackendAdapter(adapter)) {
+      return {
+        ok: false,
+        reason:
+          "WebGPU is not available: Dawn null-backend (no usable GPU driver)",
+      };
+    }
+    const device = await adapter.requestDevice();
+    logAdapterClass(adapter);
     return { ok: true, device };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
