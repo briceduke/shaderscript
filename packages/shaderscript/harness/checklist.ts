@@ -9,12 +9,18 @@ export interface ChecklistRow {
 /**
  * Fixed WGSL feature checklist for harness coverage.
  */
-export const checklist: readonly ChecklistRow[] = [];
+export const checklist: readonly ChecklistRow[] = [
+  { id: "hello-add-f32", covered: true },
+];
 
 /**
  * Percent of checklist rows marked covered.
  * @returns Coverage percent 0–100.
  */
 export function coveragePercent(): number {
-  return 0;
+  if (checklist.length === 0) {
+    return 0;
+  }
+  const coveredCount = checklist.filter((row) => row.covered).length;
+  return (coveredCount / checklist.length) * 100;
 }
