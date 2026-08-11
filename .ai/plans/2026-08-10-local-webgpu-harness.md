@@ -14,9 +14,9 @@ Task text lives only in the linked cards. Workers read their card (plus the
 Locked preload contract when their card cites it), never this file. The parent
 alone edits Progress.
 
-- [ ] Task 1: Add bun-webgpu preload and wire harness — [task-1.md](2026-08-10-local-webgpu-harness/task-1.md)
-- [ ] Task 2: Document local Dawn setup in README — [task-2.md](2026-08-10-local-webgpu-harness/task-2.md)
-- [ ] Task 3: Prove device-free gates and leave Windows GPU for smoke — [task-3.md](2026-08-10-local-webgpu-harness/task-3.md)
+- [x] Task 1: Add bun-webgpu preload and wire harness — [task-1.md](2026-08-10-local-webgpu-harness/task-1.md)
+- [x] Task 2: Document local Dawn setup in README — [task-2.md](2026-08-10-local-webgpu-harness/task-2.md)
+- [x] Task 3: Prove device-free gates and leave Windows GPU for smoke — [task-3.md](2026-08-10-local-webgpu-harness/task-3.md)
 
 ## Parallel groups
 
