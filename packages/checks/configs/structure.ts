@@ -1,10 +1,7 @@
 /**
  * Structure check config. Filled by `/constitution` for this app's folder rules.
  *
- * Hello compute first example is planned at `packages/shaderscript`. Do not add a
- * shape that matches that path until the package exists — unmatched required
- * shapes fail the scanner. The week the package lands, add a shape for it
- * (checker + compiler + runner + harness next to the package) and keep
+ * Hello compute first example lives at `packages/shaderscript`. Keep
  * lsp / vite-plugin / host / database packages out until those ships start.
  */
 
@@ -30,8 +27,20 @@ export interface StructureConfig {
 }
 
 /**
- * No folder rules until `packages/shaderscript` exists. Empty shapes are healthy.
+ * Spine shape for the hello-compute first example package.
  */
 export const structureConfig: StructureConfig = {
-  shapes: [],
+  shapes: [
+    {
+      id: "shaderscript-spine",
+      match: "packages/shaderscript",
+      requiredFiles: [
+        "src/checker.ts",
+        "src/compiler.ts",
+        "src/runner.ts",
+        "src/idioms.ts",
+        "harness/checklist.ts",
+      ],
+    },
+  ],
 };
