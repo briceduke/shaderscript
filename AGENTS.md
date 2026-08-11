@@ -58,8 +58,8 @@ Run these to prove health.
 | Check | Command | When |
 |-------|---------|------|
 | Structure | `bun run checks:structure` | Before commit; CI |
-| Subset / compiler (no GPU) | `bun run test:compile` | Before commit; CI (add script with `packages/shaderscript`) |
-| Harness spine | `bun run test:harness` | Local for GPU correctness/timing; CI runs device-free parts (add script with package) |
+| Subset / compiler (no GPU) | `bun run test:compile` | Before commit; CI |
+| Harness spine | `bun run test:harness` | Before commit; CI (device-free + GPU skip/unverifiable). Local GPU prove: set `SHADERSCRIPT_EXPECT_GPU=1` |
 | Structure-only change | `bun run checks:structure` | Enough when only structure config changed |
 
 Add conformance or invariant scripts only when constitution invents a real rule — not empty scanners “for later.”
@@ -95,7 +95,7 @@ Filled by `/constitution` from `.ai/product.md` and `.ai/architecture.md`.
    - One package `packages/shaderscript` for checker + compiler + thin runner until a second consumer forces a seam
    - Harness is the prove path — fixed WGSL checklist 1:1 with tests; correctness vs reference; timing vs hand WGSL
    - CI always runs subset + compile; GPU correctness/timing are local prove or flagged unverifiable until headless WebGPU exists
-4. **Patterns to copy:** Hello compute vertical slice (kernel → check → WGSL → run → harness). First example: `packages/shaderscript` (planned). Encode folder rules in `packages/checks/configs/structure.ts` the week that package lands.
+4. **Patterns to copy:** Hello compute vertical slice (kernel → check → WGSL → run → harness). First example: `packages/shaderscript`. Encode folder rules in `packages/checks/configs/structure.ts`.
 5. **Proof ladder:** `checks:structure` → `test:compile` (CI) → `test:harness` (GPU bars local / unverifiable in CI as needed)
 6. **Frozen surfaces:** none yet (see `BACKWARD_COMPATIBILITY.md`)
 7. **Who drives work:** you drive. Prove infra: none beyond a local WebGPU device for harness bars. Raise autonomy only with evidence.
@@ -106,7 +106,7 @@ First supervised build of each pattern to copy. Prefer a vertical slice (one thi
 
 | Pattern | First example path | What it shows |
 |---------|--------------------|---------------|
-| Hello compute (kernel → check → WGSL → run → harness) | `packages/shaderscript` (planned) | End-to-end subset TS → WGSL → WebGPU; harness coverage + CPU ref + timing vs hand WGSL |
+| Hello compute (kernel → check → WGSL → run → harness) | `packages/shaderscript` | End-to-end subset TS → WGSL → WebGPU; harness coverage + CPU ref + timing vs hand WGSL |
 
 ## Cloud types
 

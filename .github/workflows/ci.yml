@@ -1,5 +1,5 @@
-# Gates for a stamped app. Empty structure shapes pass with no feature code.
-# Root scripts delegate to packages/checks.
+# Gates for the hello-compute spine. CI runs structure + subset/compile +
+# harness without SHADERSCRIPT_EXPECT_GPU so missing devices stay unverifiable.
 name: CI
 
 on:
@@ -28,3 +28,9 @@ jobs:
 
       - name: Structure
         run: bun run checks:structure
+
+      - name: Compile
+        run: bun run test:compile
+
+      - name: Harness
+        run: bun run test:harness
