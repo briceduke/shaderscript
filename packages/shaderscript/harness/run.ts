@@ -58,12 +58,44 @@ export interface DeviceAcquireFail {
 export type DeviceAcquireResult = DeviceAcquireOk | DeviceAcquireFail;
 
 /**
+ * Logs adapter class when isFallbackAdapter is available.
+ * Does not throw; logging only.
+ */
+async function logAdapterClassAsync(): Promise<void> {
+  try {
+    const navigatorLike = globalThis.navigator as Navigator | undefined;
+    const gpu = navigatorLike?.gpu;
+    if (gpu === undefined) {
+      return;
+    }
+    const adapter = await gpu.requestAdapter();
+    if (adapter === null) {
+      return;
+    }
+    const fallback = (
+      adapter as GPUAdapter & { readonly isFallbackAdapter?: boolean }
+    ).isFallbackAdapter;
+    if (typeof fallback !== "boolean") {
+      return;
+    }
+    console.log(
+      fallback
+        ? "webgpu adapter class: fallback/software"
+        : "webgpu adapter class: non-fallback",
+    );
+  } catch {
+    // Logging must not change acquire success or fail paths.
+  }
+}
+
+/**
  * Tries to acquire a device without throwing.
  * @returns Device or failure reason.
  */
 export async function tryAcquireDeviceAsync(): Promise<DeviceAcquireResult> {
   try {
     const device = await requestDeviceOrThrowAsync();
+    await logAdapterClassAsync();
     return { ok: true, device };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
