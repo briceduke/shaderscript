@@ -89,11 +89,24 @@ bun run test:harness
 
 CI runs those three without `SHADERSCRIPT_EXPECT_GPU`, so missing devices skip the GPU lane as unverifiable. For a local GPU prove that must fail if no device is present:
 
+1. `bun-webgpu` is already a package **devDependency** (after `bun install`).
+2. Download Dawn artifacts once from the repo root (path must match the installed `bun-webgpu` layout):
+
+```bash
+bun run ./node_modules/bun-webgpu/dawn/download_artifacts.ts
+```
+
+3. Then set the expect flag and run the harness:
+
 ```bash
 # PowerShell
 $env:SHADERSCRIPT_EXPECT_GPU = "1"
 bun run test:harness
 ```
+
+Without Dawn artifacts / without a device and `SHADERSCRIPT_EXPECT_GPU` unset, the GPU lane is skip + unverifiable. With `SHADERSCRIPT_EXPECT_GPU=1` and no device, the harness fails loud.
+
+A software/fallback adapter may clear correctness. Timing leave-draft needs a hardware adapter smoke — do not claim optimized.
 
 ## Learn more
 
